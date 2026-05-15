@@ -2,7 +2,7 @@
 	"schemaVersion": 1,
 	"id": "icetea-client",
 	"version": "${version}",
-	"name": "Icetea Client",
+	"name": "Icetea",
 	"description": "Makes the game more enjoyable!!!",
 	"authors": [
 		"Exiu"

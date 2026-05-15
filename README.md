@@ -1,4 +1,4 @@
-# Icetea Client
+# Icetea
 /icetea drillswap
 
 ## Features
