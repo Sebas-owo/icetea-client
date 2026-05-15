@@ -1,0 +1,29 @@
+{
+	"schemaVersion": 1,
+	"id": "icetea-client",
+	"version": "${version}",
+	"name": "Icetea Client",
+	"description": "Makes the game more enjoyable!!!",
+	"authors": [
+		"Exiu"
+	],
+	"contact": {
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"icon": "assets/icetea-client/icon.png",
+	"environment": "client",
+	"entrypoints": {
+		"client": [
+			"exiu.iceteaclient.IceteaClient"
+		]
+	},
+	"mixins": [
+		"icetea-client.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.19.2",
+		"minecraft": "~1.21.11",
+		"java": ">=21",
+		"fabric-api": "*"
+	}
+}
