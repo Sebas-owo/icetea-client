@@ -8,7 +8,7 @@
 		"Exiu"
 	],
 	"contact": {
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"sources": "https://github.com/Sebas-owo/icetea-client"
 	},
 	"icon": "assets/icetea-client/icon.png",
 	"environment": "client",
