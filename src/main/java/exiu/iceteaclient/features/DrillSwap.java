@@ -5,9 +5,12 @@ import java.util.concurrent.TimeUnit;
 
 import exiu.iceteaclient.mixin.RightClickHelper;
 import exiu.iceteaclient.util.Delay;
+import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.event.player.UseEntityCallback;
 import net.fabricmc.fabric.api.event.player.UseItemCallback;
+import net.minecraft.block.Block;
+import net.minecraft.block.ChestBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.LoreComponent;
@@ -18,32 +21,49 @@ import net.minecraft.item.Items;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.world.World;
 
 public class DrillSwap {
 
     public static boolean enabled = false;
+    private boolean stop = false;
+    private boolean active = false;
 
     private int fishingRodSlot = -1;
     private int otherDrillSlot = -1;
     private int selectedSlot;
 
     private boolean useMainDrillAbility = false;
-
-    private boolean active = false;
     
     public void register() {
-        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> { return enabled ? rightClick(player, hand, false) : ActionResult.PASS; });
-        UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> { return enabled ? rightClick(player, hand, true) : ActionResult.PASS; });
-        UseItemCallback.EVENT.register((player, world, hand) -> { return enabled ? rightClick(player, hand, false) : ActionResult.PASS; });
+        UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> { return enabled ? rightClick(player, world, hand, false, hitResult) : ActionResult.PASS; });
+        UseEntityCallback.EVENT.register((player, world, hand, entity, hitResult) -> { return enabled ? rightClick(player, world, hand, true, null) : ActionResult.PASS; });
+        UseItemCallback.EVENT.register((player, world, hand) -> { return enabled ? rightClick(player, world, hand, false, null) : ActionResult.PASS; });
+
+        ScreenEvents.BEFORE_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
+            System.out.println("called");
+            if (active) {
+                stop = true;
+            }
+        });
     }
 
-    private ActionResult rightClick(PlayerEntity player, Hand hand, boolean entity) {
+    private ActionResult rightClick(PlayerEntity player, World world, Hand hand, boolean entity, BlockHitResult hitResult) {
         ItemStack stack = player.getStackInHand(hand);
 
         if (isDrill(stack)) {
             if (entity) {
-                return ActionResult.FAIL;
+                return ActionResult.SUCCESS;
             }
+
+            if (hitResult != null) {
+                Block block = world.getBlockState(hitResult.getBlockPos()).getBlock();
+                if (block instanceof ChestBlock) {
+                    return ActionResult.SUCCESS;
+                }
+            }
+
             if (!active) {
                 active = true;
                 return prepareSwap(player);
@@ -91,7 +111,7 @@ public class DrillSwap {
 
         if (!hasFishingRod && !hasOtherDrill) {
             active = false;
-            return ActionResult.PASS;
+            return ActionResult.SUCCESS;
         }
 
         if (hasFishingRod) {
@@ -112,6 +132,13 @@ public class DrillSwap {
         long delay = Delay.getDelay(200, 100, 300);
 
         CompletableFuture.delayedExecutor(delay, TimeUnit.MILLISECONDS).execute(() -> MinecraftClient.getInstance().execute(() -> {
+
+            if (stop) {
+                stop = false;
+                active = false;
+                return;
+            }
+
             MinecraftClient instance = MinecraftClient.getInstance();
             PlayerEntity player = instance.player;
 
